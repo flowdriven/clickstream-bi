@@ -1,5 +1,4 @@
 import time
-import json
 from confluent_kafka import KafkaError
 import src.utils as utils
 from src.writer import write_event 
@@ -7,9 +6,8 @@ from src.writer import write_event
 def process_msg(msg):
     offset = str(msg.offset())
     record = msg.value().decode('utf-8')
-    json_record = json.loads(record)
 
-    event_filename = write_event(json_record, offset)
+    event_filename = write_event(record, offset)
     return event_filename
      
 def process_topic(topic, process_name):

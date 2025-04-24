@@ -1,11 +1,15 @@
 import os
+import json
 import pandas as pd
 from dateutil.parser import parse
 
 local_data_directory = os.getenv("LOCAL_DATA_DIRECTORY", "data")
 
-def write_event(json_record, offset):    
-    df = pd.DataFrame(json_record, index=[0])
+def write_event(record: str, offset: str) -> str:    
+    # Parse the JSON data into a Python dictionary
+    record_dict = json.loads(record)
+
+    df = pd.DataFrame(record_dict, index=[0])
     
     event_time = df['event_time'].values[:1][0]
     date_obj = parse(event_time[0:19])
