@@ -2,6 +2,10 @@ import unittest
 from unittest.mock import patch, MagicMock
 from src.utils import get_admin, delete_topics, create_topics, get_producer_client, get_consumer_client
 
+# -----------------------------------------------------------------------------
+# Test Admin Client 
+# -----------------------------------------------------------------------------
+
 class TestAdmin(unittest.TestCase):
     @patch('src.utils.AdminClient')
     def test_get_admin(self, MockAdminClient):
@@ -31,6 +35,10 @@ class TestAdmin(unittest.TestCase):
         create_topics(['test_topic'])
         mock_future.result.assert_called_once()
 
+# -----------------------------------------------------------------------------
+# Test Producer client  
+# -----------------------------------------------------------------------------
+
 class TestProducer(unittest.TestCase):
     @patch('src.utils.Producer')
     def test_get_producer_client(self, MockProducer):
@@ -38,6 +46,10 @@ class TestProducer(unittest.TestCase):
         MockProducer.return_value = mock_producer
         producer_client = get_producer_client()
         self.assertEqual(producer_client, mock_producer)
+
+# -----------------------------------------------------------------------------
+# Test Consumer client  
+# -----------------------------------------------------------------------------
 
 class TestConsumer(unittest.TestCase):
     @patch('src.utils.Consumer')
