@@ -5,7 +5,7 @@ import csv
 import json
 import uuid
 import logging 
-import utils  
+import src.utils as utils  
 from pathlib import Path
 from typing import Generator, Dict
 
