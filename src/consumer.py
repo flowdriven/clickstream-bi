@@ -1,7 +1,7 @@
 import time
 from confluent_kafka import KafkaError
 import src.utils as utils
-from src.writer import write_event 
+from src.utils import write_event 
 
 def process_msg(msg):
     offset = str(msg.offset())
@@ -33,7 +33,7 @@ def process_topic(topic, process_name):
              
             filename = process_msg(msg)
             count += 1 
-            print(f"(+) New event: {filename}.json (#{count}) \n")  
+            print(f"(+) New event file: {filename} (#{count}) \n")  
             consumer.store_offsets(msg)
 
     except Exception as e:
