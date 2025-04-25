@@ -1,26 +1,29 @@
+"""Module providing utilities."""
+
 import os
 import socket
-import logging 
+import logging
 import json
 import pandas as pd
 from dateutil.parser import parse
-from confluent_kafka import Consumer, Producer 
-from confluent_kafka.admin import AdminClient, NewTopic 
-from confluent_kafka.cimpl import KafkaError
+from confluent_kafka import Consumer, Producer
+from confluent_kafka.admin import AdminClient, NewTopic
+from confluent_kafka import KafkaError
 
 logger = logging.getLogger(__name__)
 
 host = os.getenv("GUIDE_HOST", "localhost")
-port = os.getenv("GUIDE_PORT", 9092)
+port = os.getenv("GUIDE_PORT", "9092")
 kafka_broker = host + ":" + str(port)
 
 local_data_directory = os.getenv("LOCAL_DATA_DIRECTORY", "data")
 
 # -----------------------------------------------------------------------------
-# Admin Client 
+# Admin Client
 # -----------------------------------------------------------------------------
 
-def get_admin(): 
+def get_admin():
+    """Function providing Kafka admin client"""
     config = {
         'bootstrap.servers': kafka_broker
     }
@@ -28,43 +31,44 @@ def get_admin():
         admin_client = AdminClient(config)
         return admin_client
     except Exception as e:
-        logger.error(f"Error: Unable to Connect with Kafka Admin Client. Error reason : {e}")
-        print(
-            "Error: Unable to Connect with Kafka Admin Client."
-            "Error reason : {}".format(e)
-        )
+        logger.error("Error: Unable to Connect with Kafka Admin Client. Error reason : %s", e)
+        print("Error: Unable to Connect with Kafka Admin Client.")
+        print(f"Error reason : {e}")
         return None
 
 def delete_topics(topics):
+    """Function deleting existing topics"""
     admin = get_admin()
     fs = admin.delete_topics(topics)
     for topic, f in fs.items():
         try:
             f.result()
-            print("[+] Topic {} deleted".format(topic))
+            print(f"[+] Topic '{topic}' deleted")
         except Exception as e:
-            print("[-] Failed to delete topic {}: {}".format(topic, e))
+            print(f"[-] Failed to delete topic '{topic}': {e}")
 
 def create_topics(topics):
+    """Function creating new topics"""
     new_topics = [NewTopic(topic, num_partitions=3, replication_factor=1) for topic in topics]
     admin = get_admin()
     fs = admin.create_topics(new_topics)
     for topic, f in fs.items():
         try:
             f.result()  # The result itself is None
-            print("[+] Topic {} created successfully".format(topic))
-            logger.info("[+] Topic {} created successfully".format(topic))
+            print(f"[+] Topic '{topic}' created successfully")
+            logger.info("[+] Topic '%s' created successfully", topic)
         except Exception as e:
-            if e.args[0].code() == KafkaError.TOPIC_ALREADY_EXISTS:  
-                print("[-] Topic {} already exists".format(topic))                                
+            if e.args[0].code() == KafkaError.TOPIC_ALREADY_EXISTS:
+                print(f"[-] Topic '{topic}' already exists")
             else:
-                print("[-] Failed to create topic {}: {}".format(topic, e))
+                print(f"[-] Failed to create topic '{topic}': {e}")
 
 # -----------------------------------------------------------------------------
-# Producer client  
+# Producer client
 # -----------------------------------------------------------------------------
 
 def get_producer_client() -> Producer:
+    """Function providing kafka producer client"""
     config = {
         'bootstrap.servers': kafka_broker,
         'client.id': socket.gethostname(),
@@ -73,10 +77,11 @@ def get_producer_client() -> Producer:
     return Producer(config)
 
 # -----------------------------------------------------------------------------
-# Consumer client  
+# Consumer client
 # -----------------------------------------------------------------------------
 
 def get_consumer_client(group_id, process_id) -> Consumer:
+    """Function providing kafka consumer client"""
     config = {
         'bootstrap.servers': kafka_broker,
         'group.id': group_id,
@@ -85,9 +90,9 @@ def get_consumer_client(group_id, process_id) -> Consumer:
         'enable.auto.offset.store': False,
         'client.id': socket.gethostname()
     }
-    
+
     # Create logger for consumer (logs will be emitted when poll() is called)
-    logger = logging.getLogger('consumer')
+    #logger = logging.getLogger('consumer')
     logger.setLevel(logging.DEBUG)
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter('%(asctime)-15s %(levelname)-8s %(message)s'))
@@ -96,18 +101,19 @@ def get_consumer_client(group_id, process_id) -> Consumer:
     return Consumer(config, logger=logger)
 
 # -----------------------------------------------------------------------------
-# Writer service   
+# Writer service
 # -----------------------------------------------------------------------------
 
-def write_event(record: str, offset: str) -> str:    
+def write_event(record: str, offset: str) -> str:
+    """Function for writing event to a file"""
     # Parse the JSON data into a Python dictionary
     record_dict = json.loads(record)
 
     df = pd.DataFrame(record_dict, index=[0])
-    
+
     event_time = df['event_time'].values[:1][0]
     date_obj = parse(event_time[0:19])
-    date_time = date_obj.strftime("%y-%m-%d_%H-%M-%S")    
+    date_time = date_obj.strftime("%y-%m-%d_%H-%M-%S")
     event_type = df['event_type'].values[:1][0]
     filename = date_time + '_offset_' + offset + '_' + event_type + '.json'
     filepath = f"./{local_data_directory}/{filename}"

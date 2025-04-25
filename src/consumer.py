@@ -1,16 +1,19 @@
+"""Module providing a consumer client."""
+
 import time
 from confluent_kafka import KafkaError
-import src.utils as utils
-from src.utils import write_event 
+from src import utils
 
 def process_msg(msg):
+    """Function writing message to output file."""
     offset = str(msg.offset())
     record = msg.value().decode('utf-8')
 
-    event_filename = write_event(record, offset)
+    event_filename = utils.write_event(record, offset)
     return event_filename
-     
+
 def process_topic(topic, process_name):
+    """Function subscribing and reading from topic."""
     count = 0
     consumer = utils.get_consumer_client(topic, process_name)
 
@@ -28,12 +31,12 @@ def process_topic(topic, process_name):
                 if msg.error().code() == KafkaError._PARTITION_EOF:
                     continue
                 else:
-                    print("(-) Consumer error: {}".format(msg.error()))
+                    print(f"(-) Consumer error: {msg.error()}")
                     break
-             
+
             filename = process_msg(msg)
-            count += 1 
-            print(f"(+) New event file: {filename} (#{count}) \n")  
+            count += 1
+            print(f"(+) New event file: {filename} (#{count}) \n")
             consumer.store_offsets(msg)
 
     except Exception as e:
@@ -42,8 +45,8 @@ def process_topic(topic, process_name):
         time.sleep(1)
     except KeyboardInterrupt:
         consumer.close()
-        print(f"(-) Aborted by user \n")
-    finally: 
+        print("(-) Aborted by user \n")
+    finally:
         consumer.close()
 
     print(f"(+) Events count == {count}")
