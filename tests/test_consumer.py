@@ -26,7 +26,8 @@ class TestConsumer(unittest.TestCase):
         filename = process_msg(mock_msg)
 
         # Check if the DataFrame's to_json method was called with the correct parameters
-        mock_to_json.assert_called_once_with(f'./data/{filename}.json', orient='records')
+        #mock_to_json.assert_called_once_with(f'./data/{filename}.json', orient='records')
+        mock_to_json.assert_called_once_with(f'./data/{filename}', orient='records')
 
         # Check the filename format
         self.assertTrue(filename.startswith('25-04-23_14-00-00_offset_123_test_event'))
