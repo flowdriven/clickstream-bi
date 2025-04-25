@@ -1,6 +1,9 @@
 import os
 import socket
 import logging 
+import json
+import pandas as pd
+from dateutil.parser import parse
 from confluent_kafka import Consumer, Producer 
 from confluent_kafka.admin import AdminClient, NewTopic 
 from confluent_kafka.cimpl import KafkaError
@@ -10,6 +13,8 @@ logger = logging.getLogger(__name__)
 host = os.getenv("GUIDE_HOST", "localhost")
 port = os.getenv("GUIDE_PORT", 9092)
 kafka_broker = host + ":" + str(port)
+
+local_data_directory = os.getenv("LOCAL_DATA_DIRECTORY", "data")
 
 # -----------------------------------------------------------------------------
 # Admin Client 
@@ -89,3 +94,24 @@ def get_consumer_client(group_id, process_id) -> Consumer:
     logger.addHandler(handler)
 
     return Consumer(config, logger=logger)
+
+# -----------------------------------------------------------------------------
+# Writer service   
+# -----------------------------------------------------------------------------
+
+def write_event(record: str, offset: str) -> str:    
+    # Parse the JSON data into a Python dictionary
+    record_dict = json.loads(record)
+
+    df = pd.DataFrame(record_dict, index=[0])
+    
+    event_time = df['event_time'].values[:1][0]
+    date_obj = parse(event_time[0:19])
+    date_time = date_obj.strftime("%y-%m-%d_%H-%M-%S")    
+    event_type = df['event_type'].values[:1][0]
+    filename = date_time + '_offset_' + offset + '_' + event_type + '.json'
+    filepath = f"./{local_data_directory}/{filename}"
+
+    df.to_json(filepath, orient='records')
+
+    return filename

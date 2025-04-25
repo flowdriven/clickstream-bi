@@ -1,6 +1,10 @@
+import os 
+import json 
 import unittest
 from unittest.mock import patch, MagicMock
-from src.utils import get_admin, delete_topics, create_topics, get_producer_client, get_consumer_client
+from src.utils import get_admin, delete_topics, create_topics 
+from src.utils import get_producer_client, get_consumer_client
+from src.utils import write_event
 
 # -----------------------------------------------------------------------------
 # Test Admin Client 
@@ -58,3 +62,35 @@ class TestConsumer(unittest.TestCase):
         MockConsumer.return_value = mock_consumer
         consumer_client = get_consumer_client('test_group', 'test_process')
         self.assertEqual(consumer_client, mock_consumer)
+
+# -----------------------------------------------------------------------------
+# Test writer service   
+# -----------------------------------------------------------------------------
+
+class TestWriteEvent(unittest.TestCase):
+    def setUp(self):
+        self.record = json.dumps({
+            "event_time": "2025-04-25T13:04:42Z",
+            "event_type": "test_event"
+        })
+        self.offset = "12345"
+        self.local_data_directory = "./data"
+        self.file_path = None 
+
+    def tearDown(self):
+        if self.file_path: 
+            os.remove(self.file_path)
+
+    def test_write_event(self):
+        filename = write_event(self.record, self.offset)
+        expected_filename = "25-04-25_13-04-42_offset_12345_test_event.json"
+        self.assertEqual(filename, expected_filename)
+
+        file_path = os.path.join(self.local_data_directory, filename) 
+        self.assertTrue(os.path.exists(file_path))
+        self.file_path = file_path
+
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+            self.assertEqual(data[0]['event_time'], "2025-04-25T13:04:42Z")
+            self.assertEqual(data[0]['event_type'], "test_event")
