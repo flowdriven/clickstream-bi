@@ -55,6 +55,7 @@ services:
       - clickstream-tier
     env_file:
       - kafka.env
+      - aws.env
 
   consumer: 
     build: ./kafka/consumer/
@@ -70,7 +71,46 @@ services:
       - clickstream-tier
     env_file:
       - kafka.env
-      
+      - aws.env
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000" # for API access
+      - "9001:9001" # for the management console (GUI)
+    networks:
+      - clickstream-tier
+    env_file:
+      - aws.env
+    # Start the MinIO server and specify the access port for the management console (GUI)
+    command: ['server', '/data', '--console-address', ':9001']
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 1s
+      timeout: 20s
+      retries: 20
+
+  # Configuration for the MinIO Client (mc) container
+  mc:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy  
+    networks:
+      - clickstream-tier
+    env_file:
+      - aws.env
+    volumes:
+      - ./data:/data 
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minioclient http://minio:9000 admin password) do sleep 5;
+      do /usr/bin/mc mb minioclient/data;
+      do /usr/bin/mc cp data/* minioclient/data/;
+      "
+
 volumes:
   kafka_data:
     driver: local
