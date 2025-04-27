@@ -29,8 +29,6 @@ def process_csv(filename: str) -> Generator[Dict, None, None]:
     with open(filename, 'r', encoding="utf-8") as file:
         csv_reader = csv.DictReader(file)
         yield from csv_reader
-        #for row in csv_reader:
-        #    yield row
 
 def process_topic(topic):
     """Function sending records to any topic."""
@@ -54,33 +52,6 @@ def process_topic(topic):
                 )
                 count += 1
             producer_client.flush()
-
-    print(f"(+) Events count == {count}")
-    logger.info("(+) Events count == %s", count)
-    print(f"(+) Execution time: {time.time() - start_time} seconds \n")
-    logger.info("(+) Execution time: %s seconds \n", (time.time() - start_time))
-
-def aws_process_topic(topic):
-    """Function sending records to any topic."""
-    count = 0
-    start_time = time.time()
-
-    producer_client = utils.get_producer_client()
-
-    key = topic + '.csv'
-    fileobj = get_file_from_s3(key)
-
-    for record in process_csv(fileobj):
-        record_str = json.dumps(record)
-        record_bytes = bytes(record_str, 'utf-8')
-        producer_client.produce(
-            topic=topic,
-            key=str(uuid.uuid4().hex),
-            value=record_bytes,
-            callback=delivery_report
-        )
-        count += 1
-    producer_client.flush()
 
     print(f"(+) Events count == {count}")
     logger.info("(+) Events count == %s", count)
