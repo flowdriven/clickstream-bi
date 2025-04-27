@@ -1,0 +1,120 @@
+services:
+  kafka:
+    image: docker.io/bitnami/kafka:4.0
+    container_name: kafka-broker   
+    ports:
+      - "9092:9092"
+    networks:
+      - clickstream-tier
+    volumes:
+      - "kafka_data:/bitnami"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions.sh", "--bootstrap-server localhost:9092"]
+      #start_period: 15s
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0 
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      #- KAFKA_DELETE_TOPIC_ENABLE=true
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui  
+    ports:
+      - 8800:8080  
+    networks:
+      - clickstream-tier  
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: PLAINTEXT://kafka:9092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+  
+  producer: 
+    build: ./kafka/producer/
+    container_name: producer
+    depends_on:
+      kafka:
+        condition: service_healthy
+    tty: true 
+    volumes:
+      - ./src:/app/src      
+      - ./data:/app/data
+    networks:
+      - clickstream-tier
+    env_file:
+      - kafka.env
+      - aws.env
+
+  consumer: 
+    build: ./kafka/consumer/
+    container_name: consumer
+    depends_on:
+      kafka:
+        condition: service_healthy
+    tty: true 
+    volumes:
+      - ./src:/app/src      
+      - ./data:/app/data
+    networks:
+      - clickstream-tier
+    env_file:
+      - kafka.env
+      - aws.env
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9000:9000" # for API access
+      - "9001:9001" # for the management console (GUI)
+    networks:
+      - clickstream-tier
+    env_file:
+      - aws.env
+    # Start the MinIO server and specify the access port for the management console (GUI)
+    command: ['server', '/data', '--console-address', ':9001']
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 1s
+      timeout: 20s
+      retries: 20
+
+  # Configuration for the MinIO Client (mc) container
+  mc:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy  
+    networks:
+      - clickstream-tier
+    env_file:
+      - aws.env
+    volumes:
+      - ./data:/data 
+    entrypoint: >
+      /bin/sh -c "
+      until (/usr/bin/mc alias set minioclient http://minio:9000 admin password) do sleep 5;
+      do /usr/bin/mc mb minioclient/data;
+      do /usr/bin/mc cp data/* minioclient/data/;
+      "
+
+volumes:
+  kafka_data:
+    driver: local
+
+networks:
+  clickstream-tier:  
+    driver: bridge 
