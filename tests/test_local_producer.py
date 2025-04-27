@@ -3,13 +3,13 @@
 import unittest
 from unittest.mock import patch, MagicMock, mock_open
 import json
-from src.producer import process_topic, delivery_report
+from src.local_producer import process_topic, delivery_report
 
 class TestProducer(unittest.TestCase):
     """Class testing Kafka producer client"""
     @patch('src.utils.get_producer_client')
-    @patch('src.producer.glob.glob')
-    @patch('src.producer.open', new_callable=mock_open, read_data='col1,col2\nval1,val2\nval3,val4')
+    @patch('src.local_producer.glob.glob')
+    @patch('src.local_producer.open', new_callable=mock_open, read_data='col1,col2\nval1,val2\nval3,val4')
     def test_process_topic(self, mock_open, mock_glob, mock_get_producer_client):
         """Function mocking Kafka producer client"""
         mock_producer = MagicMock()

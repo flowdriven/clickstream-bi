@@ -3,14 +3,13 @@
 import time
 from confluent_kafka import KafkaError
 from src import utils
-from src import aws_utils
 
 def process_msg(msg):
     """Function writing message to output file."""
     offset = str(msg.offset())
     record = msg.value().decode('utf-8')
 
-    event_filename = aws_utils.write_event(record, offset)
+    event_filename = utils.write_event(record, offset)
     return event_filename
 
 def process_topic(topic, process_name):
