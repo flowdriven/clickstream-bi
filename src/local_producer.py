@@ -11,7 +11,6 @@ import json
 import uuid
 import logging
 from src import utils
-from src.aws_utils import get_file_from_s3
 
 logger = logging.getLogger(__name__)
 data_directory = os.getenv("DATA_DIRECTORY", "data")
