@@ -47,12 +47,9 @@ def put_file_into_s3(data_buffer, key):
     """Writing file into s3 bucket."""
     try:
         s3 = session.client('s3', endpoint_url=aws_endpoint_url_s3)
-
-        response = s3.put_object(
+        s3.put_object(
             Bucket=bucket_name, Key=key, Body=data_buffer.getvalue()
         )
-
-        status = response.get("ResponseMetaData", {})
 
     except ClientError as ex:
         if ex.response['Error']['Code'] == 'NoSuchKey':

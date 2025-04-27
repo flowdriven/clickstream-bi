@@ -2,17 +2,15 @@
 
 import json
 import unittest
-#from unittest.mock import patch, MagicMock, mock_open
-from unittest.mock import patch, MagicMock
-from src.consumer import process_msg, process_topic
+from unittest.mock import patch, MagicMock, mock_open
+from src.local_consumer import process_msg, process_topic
 
 class TestConsumer(unittest.TestCase):
     """Class testing Kafka consumer client""" 
     @patch('src.utils.get_consumer_client')
     @patch('src.utils.pd.DataFrame.to_json')
-    #@patch('src.consumer.open', new_callable=mock_open)
-    #def test_process_msg(self, mock_open, mock_to_json, mock_get_consumer_client):
-    def test_process_msg(self, mock_to_json, mock_get_consumer_client):
+    @patch('src.local_consumer.open', new_callable=mock_open)
+    def test_process_msg(self, mock_open, mock_to_json, mock_get_consumer_client):
         """Function mocking Kafka consumer client"""        
         # Mock the Kafka consumer client
         mock_consumer = MagicMock()
@@ -30,14 +28,13 @@ class TestConsumer(unittest.TestCase):
         filename = process_msg(mock_msg)
 
         # Check if the DataFrame's to_json method was called with the correct parameters
-        #mock_to_json.assert_called_once_with(f'./data/{filename}.json', orient='records')
         mock_to_json.assert_called_once_with(f'./data/{filename}', orient='records')
 
         # Check the filename format
         self.assertTrue(filename.startswith('25-04-23_14-00-00_offset_123_test_event'))
 
     @patch('src.utils.get_consumer_client')
-    @patch('src.consumer.process_msg')
+    @patch('src.local_consumer.process_msg')
     def test_process_topic(self, mock_process_msg, mock_get_consumer_client):
         """Function mocking Kafka consumer client"""
         mock_consumer = MagicMock()
