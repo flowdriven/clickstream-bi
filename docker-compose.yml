@@ -8,20 +8,23 @@ services:
       - clickstream-tier
     volumes:
       - "kafka_data:/bitnami"
-    healthcheck:
-      test: ["CMD", "kafka-broker-api-versions.sh", "--bootstrap-server localhost:9092"]
-      #start_period: 15s
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    #healthcheck:
+    #  #test: ["CMD", "kafka-broker-api-versions.sh", "--bootstrap-server localhost:9092"]
+    #  test: ["CMD", "kafka-cluster.sh cluster-id", "--bootstrap-server localhost:9092"]
+    #  start_period: 15s
+    #  interval: 10s
+    #  timeout: 5s
+    #  retries: 3
     environment:
       # KRaft settings
+      #- KAFKA_KRAFT_CLUSTER_ID=OTMwNzFhYTY1ODNiNGE5OT
       - KAFKA_CFG_NODE_ID=0 
       - KAFKA_CFG_PROCESS_ROLES=controller,broker
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       # Listeners
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      ###- KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
       - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
@@ -45,8 +48,10 @@ services:
     build: ./kafka/producer/
     container_name: producer
     depends_on:
-      kafka:
-        condition: service_healthy
+      - kafka
+    #depends_on:
+    #  kafka:
+    #    condition: service_healthy
     tty: true 
     volumes:
       - ./src:/app/src      
@@ -54,15 +59,17 @@ services:
     networks:
       - clickstream-tier
     env_file:
-      - kafka.env
-      - aws.env
+      - kafka.env.dev
+      - aws.env.dev
 
   consumer: 
     build: ./kafka/consumer/
     container_name: consumer
     depends_on:
-      kafka:
-        condition: service_healthy
+      - kafka
+    #depends_on:
+    #  kafka:
+    #    condition: service_healthy
     tty: true 
     volumes:
       - ./src:/app/src      
@@ -70,8 +77,8 @@ services:
     networks:
       - clickstream-tier
     env_file:
-      - kafka.env
-      - aws.env
+      - kafka.env.dev
+      - aws.env.dev
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -83,37 +90,41 @@ services:
     networks:
       - clickstream-tier
     env_file:
-      - aws.env
+      - aws.env.dev
     # Start the MinIO server and specify the access port for the management console (GUI)
     command: ['server', '/data', '--console-address', ':9001']
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 1s
-      timeout: 20s
-      retries: 20
+    #healthcheck:
+    #  test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+    #  interval: 1s
+    #  timeout: 20s
+    #  retries: 20
 
   # Configuration for the MinIO Client (mc) container
   mc:
     image: minio/mc:latest
     depends_on:
-      minio:
-        condition: service_healthy  
+      - minio
+      #minio:
+      #  condition: service_healthy  
     networks:
       - clickstream-tier
     env_file:
-      - aws.env
+      - aws.env.dev
     volumes:
       - ./data:/data 
     entrypoint: >
       /bin/sh -c "
-      until (/usr/bin/mc alias set minioclient http://minio:9000 admin password) do sleep 5;
-      do /usr/bin/mc mb minioclient/data;
-      do /usr/bin/mc cp data/* minioclient/data/;
+      until /usr/bin/mc alias set minioclient http://minio:9000 admin password; do sleep 5;
+      done;
+      /usr/bin/mc rb --force minioclient/data;
+      /usr/bin/mc mb minioclient/data;
+      /usr/bin/mc cp data/* minioclient/data/;
       "
 
 volumes:
   kafka_data:
     driver: local
+  minio_data: {}
 
 networks:
   clickstream-tier:  
