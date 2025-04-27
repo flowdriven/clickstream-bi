@@ -52,11 +52,7 @@ def put_file_into_s3(data_buffer, key):
             Bucket=bucket_name, Key=key, Body=data_buffer.getvalue()
         )
 
-        status = response.get("ResponseMetaData", {}) 
-        if status == 200:
-            print(f"[+] Successful S3 put_object response. Status - {status}")
-        else:
-            print(f"[-] Unsuccessful S3 put_object response. Status - {status}")
+        status = response.get("ResponseMetaData", {})
 
     except ClientError as ex:
         if ex.response['Error']['Code'] == 'NoSuchKey':
