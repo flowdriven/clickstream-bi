@@ -15,18 +15,18 @@ from src.utils import write_event
 class TestAdmin(unittest.TestCase):
     """Class testing Kafka admin client"""
     @patch('src.utils.AdminClient')
-    def test_get_admin(self, MockAdminClient):
+    def test_get_admin(self, mock_admin_client):
         """Function mocking Kafka admin client"""
-        mock_admin_client = MagicMock()
-        MockAdminClient.return_value = mock_admin_client
+        mock_admin_client_instance = MagicMock()
+        mock_admin_client.return_value = mock_admin_client_instance
         admin_client = get_admin()
-        self.assertEqual(admin_client, mock_admin_client)
+        self.assertEqual(admin_client, mock_admin_client_instance)
 
     @patch('src.utils.get_admin')
-    def test_delete_topics(self, MockGetAdmin):
+    def test_delete_topics(self, mock_get_admin):
         """Function testing delete topics"""
         mock_admin_client = MagicMock()
-        MockGetAdmin.return_value = mock_admin_client
+        mock_get_admin.return_value = mock_admin_client
         mock_future = MagicMock()
         mock_future.result.return_value = None
         mock_admin_client.delete_topics.return_value = {'test_topic': mock_future}
@@ -35,10 +35,10 @@ class TestAdmin(unittest.TestCase):
 
     @patch('src.utils.get_admin')
     @patch('src.utils.NewTopic')
-    def test_create_topics(self, MockNewTopic, MockGetAdmin):
+    def test_create_topics(self, mock_new_topic, mock_get_admin):
         """Function testing create topics"""
         mock_admin_client = MagicMock()
-        MockGetAdmin.return_value = mock_admin_client
+        mock_get_admin.return_value = mock_admin_client
         mock_future = MagicMock()
         mock_future.result.return_value = None
         mock_admin_client.create_topics.return_value = {'test_topic': mock_future}
@@ -52,12 +52,12 @@ class TestAdmin(unittest.TestCase):
 class TestProducer(unittest.TestCase):
     """Class testing Kafka producer client"""
     @patch('src.utils.Producer')
-    def test_get_producer_client(self, MockProducer):
+    def test_get_producer_client(self, mock_producer):
         """Function mocking producer"""
-        mock_producer = MagicMock()
-        MockProducer.return_value = mock_producer
+        mock_producer_instance = MagicMock()
+        mock_producer.return_value = mock_producer_instance
         producer_client = get_producer_client()
-        self.assertEqual(producer_client, mock_producer)
+        self.assertEqual(producer_client, mock_producer_instance)
 
 # -----------------------------------------------------------------------------
 # Test Consumer client
@@ -66,12 +66,12 @@ class TestProducer(unittest.TestCase):
 class TestConsumer(unittest.TestCase):
     """Class testing Kafka consumer client"""
     @patch('src.utils.Consumer')
-    def test_get_consumer_client(self, MockConsumer):
+    def test_get_consumer_client(self, mock_consumer):
         """Function mocking consumer"""
-        mock_consumer = MagicMock()
-        MockConsumer.return_value = mock_consumer
+        mock_consumer_instance = MagicMock()
+        mock_consumer.return_value = mock_consumer_instance
         consumer_client = get_consumer_client('test_group', 'test_process')
-        self.assertEqual(consumer_client, mock_consumer)
+        self.assertEqual(consumer_client, mock_consumer_instance)
 
 # -----------------------------------------------------------------------------
 # Test writer service

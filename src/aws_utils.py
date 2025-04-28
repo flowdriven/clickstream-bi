@@ -72,7 +72,7 @@ def write_event(record: str, offset: str) -> str:
     date_obj = parse(event_time[0:19])
     date_time = date_obj.strftime("%y-%m-%d_%H-%M-%S")
     event_type = df['event_type'].values[:1][0]
-    key = date_time + '_offset_' + offset + '_' + event_type + '.json'
+    key = '/raw/' + date_time + '_offset_' + offset + '_' + event_type + '.json'
 
     with io.StringIO() as json_buffer:
         df.to_json(json_buffer, orient='records')
