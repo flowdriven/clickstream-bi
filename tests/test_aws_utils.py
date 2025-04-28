@@ -72,7 +72,7 @@ class TestAWSUtils(unittest.TestCase):
         result = write_event(record, offset)
 
         # Expected key
-        expected_key = '25-04-28_10-00-00_offset_123_test_event.json'
+        expected_key = '/raw/25-04-28_10-00-00_offset_123_test_event.json'
 
         # Assertions
         mock_put_file_into_s3.assert_called_once()
