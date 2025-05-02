@@ -11,3 +11,11 @@ env/
 venv/
 .venv/
 *.json 
+airflow/
+dags/*
+!dags/
+!dags/dag_stream.py
+logs/*
+!logs/
+plugins*
+!plugins/

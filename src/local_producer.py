@@ -1,7 +1,8 @@
-"""Module providing a producer client."""
-
 from pathlib import Path
 from typing import Generator, Dict
+
+from typing import Optional
+from pydantic import BaseModel, NonNegativeFloat, ValidationError
 
 import os
 import glob
@@ -14,6 +15,23 @@ from src import utils
 
 logger = logging.getLogger(__name__)
 data_directory = os.getenv("DATA_DIRECTORY", "data")
+
+class ClickEvent(BaseModel):
+    event_time: str
+    event_type: str
+    product_id: str 
+    category_id: str 
+    category_code: Optional[str] = None
+    brand: Optional[str] = None
+    price: NonNegativeFloat
+    user_id: str 
+    user_session: str 
+
+def validate(record):
+    try:
+        ClickEvent.model_validate_json(record)
+    except ValidationError as e:
+        print(f"[-] Model error: {e.json()}")
 
 def delivery_report(err, msg):
     """ Called once for each message produced to indicate delivery result.
@@ -43,6 +61,7 @@ def process_topic(topic):
         if topic_file == topic:
             for record in process_csv(filename):
                 record_str = json.dumps(record)
+                validate(record_str)
                 record_bytes = bytes(record_str, 'utf-8')
                 producer_client.produce(
                     topic=topic,

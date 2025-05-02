@@ -1,14 +1,10 @@
-"""Module for testing consumer."""
-
 import unittest
 from unittest.mock import patch, MagicMock
 from src.consumer import process_msg, process_topic
 
 class TestConsumer(unittest.TestCase):
-    """Class testing Kafka consumer client""" 
     @patch('src.consumer.aws_utils.write_event')
     def test_process_msg(self, mock_write_event):
-        """Function mocking a new event """  
         # Mock message
         mock_msg = MagicMock()
         mock_msg.offset.return_value = 123
@@ -27,7 +23,6 @@ class TestConsumer(unittest.TestCase):
     @patch('src.consumer.utils.get_consumer_client')
     @patch('src.consumer.process_msg')
     def test_process_topic(self, mock_process_msg, mock_get_consumer_client):
-        """Function mocking a new topic """  
         # Mock consumer client
         mock_consumer = MagicMock()
         mock_get_consumer_client.return_value = mock_consumer

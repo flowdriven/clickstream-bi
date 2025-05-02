@@ -1,15 +1,11 @@
-"""Module for testing utilities."""
-
 import unittest
 from unittest.mock import patch, MagicMock
 from botocore.exceptions import ClientError
 from src.aws_utils import get_file_from_s3, put_file_into_s3, write_event
 
 class TestAWSUtils(unittest.TestCase):
-    """Class testing utilities for managing aws resources"""
     @patch('src.aws_utils.session.client')
     def test_get_file_from_s3(self, mock_session_client):
-        """Function testing file retrieve from s3 bucket"""
         # Mock S3 client
         mock_s3 = MagicMock()
         mock_session_client.return_value = mock_s3
@@ -28,7 +24,6 @@ class TestAWSUtils(unittest.TestCase):
 
     @patch('src.aws_utils.session.client')
     def test_get_file_from_s3_no_such_key(self, mock_session_client):
-        """Function testing error file retrieve from s3 bucket"""
         # Mock S3 client
         mock_s3 = MagicMock()
         mock_session_client.return_value = mock_s3
@@ -46,7 +41,6 @@ class TestAWSUtils(unittest.TestCase):
 
     @patch('src.aws_utils.session.client')
     def test_put_file_into_s3(self, mock_session_client):
-        """Function testing file put into s3 bucket"""
         # Mock S3 client
         mock_s3 = MagicMock()
         mock_session_client.return_value = mock_s3
@@ -63,7 +57,6 @@ class TestAWSUtils(unittest.TestCase):
 
     @patch('src.aws_utils.put_file_into_s3')
     def test_write_event(self, mock_put_file_into_s3):
-        """Function testing new file event"""
         # Mock record and offset
         record = '{"event_time": "2025-04-28T10:00:00Z", "event_type": "test_event"}'
         offset = '123'

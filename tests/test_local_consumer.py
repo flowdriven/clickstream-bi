@@ -1,17 +1,13 @@
-"""Module for testing consumer."""
-
 import json
 import unittest
 from unittest.mock import patch, MagicMock, mock_open
 from src.local_consumer import process_msg, process_topic
 
 class TestConsumer(unittest.TestCase):
-    """Class testing Kafka consumer client""" 
     @patch('src.utils.get_consumer_client')
     @patch('src.utils.pd.DataFrame.to_json')
     @patch('src.local_consumer.open', new_callable=mock_open)
     def test_process_msg(self, mock_open, mock_to_json, mock_get_consumer_client):
-        """Function mocking Kafka consumer client"""        
         # Mock the Kafka consumer client
         mock_consumer = MagicMock()
         mock_get_consumer_client.return_value = mock_consumer
@@ -36,7 +32,6 @@ class TestConsumer(unittest.TestCase):
     @patch('src.utils.get_consumer_client')
     @patch('src.local_consumer.process_msg')
     def test_process_topic(self, mock_process_msg, mock_get_consumer_client):
-        """Function mocking Kafka consumer client"""
         mock_consumer = MagicMock()
         mock_get_consumer_client.return_value = mock_consumer
 
