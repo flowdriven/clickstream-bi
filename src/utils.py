@@ -1,5 +1,3 @@
-"""Module providing utilities."""
-
 import os
 import socket
 import logging
@@ -17,6 +15,14 @@ port = os.getenv("GUIDE_PORT", "9092")
 kafka_broker = host + ":" + str(port)
 
 local_data_directory = os.getenv("LOCAL_DATA_DIRECTORY", "data")
+
+topic_list = os.getenv("TOPIC_LIST").split(",")
+
+# -----------------------------------------------------------------------------
+# Get topics list
+# -----------------------------------------------------------------------------
+def get_topics():
+    return topic_list 
 
 # -----------------------------------------------------------------------------
 # Admin Client
@@ -88,6 +94,8 @@ def get_consumer_client(group_id, process_id) -> Consumer:
         'group.instance.id': process_id,
         'auto.offset.reset': 'earliest',
         'enable.auto.offset.store': False,
+        'max.poll.interval.ms': '10000', # timeout 10 seconds
+        'session.timeout.ms': '10000', # timeout 10 seconds
         'client.id': socket.gethostname()
     }
 

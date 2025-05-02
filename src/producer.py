@@ -1,5 +1,3 @@
-"""Module providing a producer client."""
-
 from typing import Generator, Dict
 
 import codecs

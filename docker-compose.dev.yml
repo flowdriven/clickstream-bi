@@ -1,0 +1,87 @@
+services:
+  kafka:
+    image: docker.io/bitnami/kafka:4.0
+    container_name: kafka-broker   
+    ports:
+      - "9092:9092"
+    networks:
+      - clickstream-tier
+    volumes:
+      - "kafka_data:/bitnami"
+    #healthcheck:
+    #  #test: ["CMD", "kafka-broker-api-versions.sh", "--bootstrap-server localhost:9092"]
+    #  test: ["CMD", "kafka-cluster.sh cluster-id", "--bootstrap-server localhost:9092"]
+    #  start_period: 15s
+    #  interval: 10s
+    #  timeout: 5s
+    #  retries: 3
+    environment:
+      # KRaft settings
+      #- KAFKA_KRAFT_CLUSTER_ID=OTMwNzFhYTY1ODNiNGE5OT
+      - KAFKA_CFG_NODE_ID=0 
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://:9092
+      ###- KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      #- KAFKA_DELETE_TOPIC_ENABLE=true
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui  
+    ports:
+      - 8800:8080  
+    networks:
+      - clickstream-tier  
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: PLAINTEXT://kafka:9092
+      DYNAMIC_CONFIG_ENABLED: 'true'
+  
+  producer: 
+    build: ./kafka/producer/
+    container_name: producer
+    depends_on:
+      - kafka
+    #depends_on:
+    #  kafka:
+    #    condition: service_healthy
+    tty: true 
+    volumes:
+      - ./src:/app/src      
+      - ./data:/app/data
+    networks:
+      - clickstream-tier
+    env_file:
+      - dev.env 
+
+  consumer: 
+    build: ./kafka/consumer/
+    container_name: consumer
+    depends_on:
+      - kafka
+    #depends_on:
+    #  kafka:
+    #    condition: service_healthy
+    tty: true 
+    volumes:
+      - ./src:/app/src      
+      - ./data:/app/data
+    networks:
+      - clickstream-tier
+    env_file:
+      - dev.env 
+
+volumes:
+  kafka_data:
+    driver: local
+
+networks:
+  clickstream-tier:  
+    driver: bridge 

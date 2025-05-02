@@ -1,5 +1,3 @@
-"""Module providing a consumer client."""
-
 import time
 from confluent_kafka import KafkaError
 from src import utils

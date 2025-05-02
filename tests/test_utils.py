@@ -1,5 +1,3 @@
-"""Module for testing utilities."""
-
 import os
 import json
 import unittest
@@ -13,10 +11,8 @@ from src.utils import write_event
 # -----------------------------------------------------------------------------
 
 class TestAdmin(unittest.TestCase):
-    """Class testing Kafka admin client"""
     @patch('src.utils.AdminClient')
     def test_get_admin(self, mock_admin_client):
-        """Function mocking Kafka admin client"""
         mock_admin_client_instance = MagicMock()
         mock_admin_client.return_value = mock_admin_client_instance
         admin_client = get_admin()
@@ -24,7 +20,6 @@ class TestAdmin(unittest.TestCase):
 
     @patch('src.utils.get_admin')
     def test_delete_topics(self, mock_get_admin):
-        """Function testing delete topics"""
         mock_admin_client = MagicMock()
         mock_get_admin.return_value = mock_admin_client
         mock_future = MagicMock()
@@ -36,7 +31,6 @@ class TestAdmin(unittest.TestCase):
     @patch('src.utils.get_admin')
     @patch('src.utils.NewTopic')
     def test_create_topics(self, mock_new_topic, mock_get_admin):
-        """Function testing create topics"""
         mock_admin_client = MagicMock()
         mock_get_admin.return_value = mock_admin_client
         mock_future = MagicMock()
@@ -50,10 +44,8 @@ class TestAdmin(unittest.TestCase):
 # -----------------------------------------------------------------------------
 
 class TestProducer(unittest.TestCase):
-    """Class testing Kafka producer client"""
     @patch('src.utils.Producer')
     def test_get_producer_client(self, mock_producer):
-        """Function mocking producer"""
         mock_producer_instance = MagicMock()
         mock_producer.return_value = mock_producer_instance
         producer_client = get_producer_client()
@@ -64,10 +56,8 @@ class TestProducer(unittest.TestCase):
 # -----------------------------------------------------------------------------
 
 class TestConsumer(unittest.TestCase):
-    """Class testing Kafka consumer client"""
     @patch('src.utils.Consumer')
     def test_get_consumer_client(self, mock_consumer):
-        """Function mocking consumer"""
         mock_consumer_instance = MagicMock()
         mock_consumer.return_value = mock_consumer_instance
         consumer_client = get_consumer_client('test_group', 'test_process')
@@ -78,7 +68,6 @@ class TestConsumer(unittest.TestCase):
 # -----------------------------------------------------------------------------
 
 class TestWriteEvent(unittest.TestCase):
-    """Class testing writing service"""
     def setUp(self):
         """Action before testing"""
         self.record = json.dumps({
