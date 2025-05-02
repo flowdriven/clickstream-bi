@@ -3,6 +3,11 @@ from confluent_kafka import KafkaError
 from src import utils
 from src import aws_utils
 
+TIMEOUT_SECONDS = 15
+
+def termination_required(last_message_time):
+    return time.time() - last_message_time > TIMEOUT_SECONDS
+
 def process_msg(msg):
     """Function writing message to output file."""
     offset = str(msg.offset())
@@ -14,6 +19,8 @@ def process_msg(msg):
 def process_topic(topic, process_name):
     """Function subscribing and reading from topic."""
     count = 0
+    last_message_time = 0
+
     consumer = utils.get_consumer_client(topic, process_name)
 
     def print_assignment(consumer, partitions):
@@ -24,7 +31,13 @@ def process_topic(topic, process_name):
     try:
         while True:
             msg = consumer.poll(1.0)
-            if msg is None:
+            if msg is None:       
+                if last_message_time == 0:
+                    last_message_time = time.time()
+                else:
+                    if termination_required(last_message_time):
+                        print("(+) Timeout reached, stopping consumer.") 
+                        break
                 continue
             if msg.error():
                 if msg.error().code() == KafkaError._PARTITION_EOF:
@@ -48,4 +61,4 @@ def process_topic(topic, process_name):
     finally:
         consumer.close()
 
-    print(f"(+) Events count == {count}")
+    print(f"(+) Consumed: {count} events")
