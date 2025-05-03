@@ -1,5 +1,8 @@
 from typing import Generator, Dict
 
+from pydantic import BaseModel, NonNegativeFloat, ValidationError
+from typing import Optional
+
 import codecs
 import time
 import csv
@@ -10,6 +13,23 @@ from src import utils
 from src.aws_utils import get_file_from_s3
 
 logger = logging.getLogger(__name__)
+
+class ClickEvent(BaseModel):
+    event_time: str 
+    event_type: str
+    product_id: str
+    category_id: str
+    category_code: Optional[str] 
+    brand: Optional[str]
+    price: NonNegativeFloat
+    user_id: str
+    user_session: str
+
+def validate(record):
+    try:
+        ClickEvent.model_validate_json(record)
+    except ValidationError as e:
+               print(f"Error found in document: {record}\n", e.json())
 
 def delivery_report(err, msg):
     """ Called once for each message produced to indicate delivery result.
@@ -61,6 +81,7 @@ def process_topic(topic):
 
     for record in process_csv(data):
         record_str = json.dumps(record)
+        validate(record_str)
         record_bytes = bytes(record_str, 'utf-8')
         producer_client.produce(
             topic=topic,
