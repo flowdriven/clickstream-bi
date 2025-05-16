@@ -1,4 +1,4 @@
-# Clickstream Project
+# Clickstream ELT Project
 
 ## 1. Scenario and Purpose
 
