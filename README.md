@@ -62,7 +62,7 @@ This layer enables exploration and analysis of processed data through interactiv
 ## 4. Tools
 
 * **a) Python (Data Extract & Load)**
-    * Custom-built modules (API data extraction)
+    * Custom-built modules (stream data extraction and loading)
     * Pydantic (schema validation)
     * Python Unittest (unit testing)
     * Logging (error handling)
@@ -71,7 +71,7 @@ This layer enables exploration and analysis of processed data through interactiv
 * **c) Apache Kafka (Streaming)**
 * **d) Git/Github Actions (Version Control)**
     * CI/CD pipeline (linting, testing, replication)
-    * Dev & Prod environments (software development)
+    * Dev & Stage environments (software development)
 * **e) Other**
     * AWS S3 buckets (data storage)
     * `.env` & `dev.env` files (Configuration as Code)
