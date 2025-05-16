@@ -86,23 +86,23 @@ The data pipeline uses the ELT framework, extracting and loading data "as-is" fr
 Kafka stream into an AWS S3 bucket.  
 Data streaming is emulated from two csv samples containing synthetic data:
 
-1. **Cart events**
+1. **Cart events:**
    Add product to cart events. Custom Python functions consume record from csv, 
    validate schema using Pydantic, and send message to Kafka.
    Custom Python functions consume message from Kafka and load json data into S3.    
 
-2. **Purchase event**
+2. **Purchase events:**
    Product purchase events. Custom Python functions consume record from csv, 
    validate schema using Pydantic, and send message to Kafka.
    Custom Python functions consume message from Kafka and load json data into S3.    
 
 Orchestration is provided in two ways:
 
-1. **Local mode**
+1. **Local mode:**
    In a delopment environment, two controllers simulate orchestration with 
    multiprocessing. Kafka producing and consuming manage data on local storage. 
 
-2. **Cloud mode**
+2. **Cloud mode:**
    In a stage environment, Airflow manage the orchestration. Kafka producing
    and consuming manage data on S3 storage. 
 
@@ -111,8 +111,9 @@ Unit tests using `unittest` ensure function correctness. Airflow DAGs orchestrat
 ### Github Workflows
 
 CI workflows (`ci.yaml`) on pull requests run linting (Ruff) and `unittest`. 
-CD workflows (`cd.yaml`) on merge to main will sync codebase on AWS and rebuild 
-Docker images. 
+
+CD workflows (`cd.yaml`) on merge to main will sync codebase on AWS and will launch
+rebuilding Docker images. 
 
 ## 7. Future Direction
 
@@ -126,7 +127,6 @@ Docker images.
 ### Project Structure
 
 ```bash
-├── Dockerfile
 ├── docker-compose.dev.yml             # Docker launch with local storage
 ├── docker-compose.stage.yml           # Docker launch with MinIO S3  
 ├── docker-compose.yml                 # Docker launch with AWS S3 
@@ -145,7 +145,7 @@ Docker images.
 ├── data                               # Data samples
 │   ├── cart.csv
 │   └── purchase.csv   
-├── kafka
+├── kafka                              # Orchestration via multiprocessing 
 │   ├── consumer
 │   │   ├── consumer_controller.py     # Consumer controller multiprocessing 
 │   │   ├── Dockerfile

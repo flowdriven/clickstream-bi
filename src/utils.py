@@ -25,11 +25,9 @@ def get_topics():
     return topic_list 
 
 # -----------------------------------------------------------------------------
-# Admin Client
+# Kafka Admin Client utilities
 # -----------------------------------------------------------------------------
-
 def get_admin():
-    """Function providing Kafka admin client"""
     config = {
         'bootstrap.servers': kafka_broker
     }
@@ -43,7 +41,6 @@ def get_admin():
         return None
 
 def delete_topics(topics):
-    """Function deleting existing topics"""
     admin = get_admin()
     fs = admin.delete_topics(topics)
     for topic, f in fs.items():
@@ -54,7 +51,6 @@ def delete_topics(topics):
             print(f"[-] Failed to delete topic '{topic}': {e}")
 
 def create_topics(topics):
-    """Function creating new topics"""
     new_topics = [NewTopic(topic, num_partitions=3, replication_factor=1) for topic in topics]
     admin = get_admin()
     fs = admin.create_topics(new_topics)
@@ -70,11 +66,9 @@ def create_topics(topics):
                 print(f"[-] Failed to create topic '{topic}': {e}")
 
 # -----------------------------------------------------------------------------
-# Producer client
+# Kafka Producer client
 # -----------------------------------------------------------------------------
-
 def get_producer_client() -> Producer:
-    """Function providing kafka producer client"""
     config = {
         'bootstrap.servers': kafka_broker,
         'client.id': socket.gethostname(),
@@ -83,11 +77,9 @@ def get_producer_client() -> Producer:
     return Producer(config)
 
 # -----------------------------------------------------------------------------
-# Consumer client
+# Kafka Consumer client
 # -----------------------------------------------------------------------------
-
 def get_consumer_client(group_id, process_id) -> Consumer:
-    """Function providing kafka consumer client"""
     config = {
         'bootstrap.servers': kafka_broker,
         'group.id': group_id,
@@ -109,11 +101,9 @@ def get_consumer_client(group_id, process_id) -> Consumer:
     return Consumer(config, logger=logger)
 
 # -----------------------------------------------------------------------------
-# Writer service
+# Json record writer on local storage
 # -----------------------------------------------------------------------------
-
 def write_event(record: str, offset: str) -> str:
-    """Function for writing event to a file"""
     # Parse the JSON data into a Python dictionary
     record_dict = json.loads(record)
 

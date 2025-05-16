@@ -3,7 +3,6 @@ from confluent_kafka import KafkaError
 from src import utils
 
 def process_msg(msg):
-    """Function writing message to output file."""
     offset = str(msg.offset())
     record = msg.value().decode('utf-8')
 
@@ -11,7 +10,6 @@ def process_msg(msg):
     return event_filename
 
 def process_topic(topic, process_name):
-    """Function subscribing and reading from topic."""
     count = 0
     consumer = utils.get_consumer_client(topic, process_name)
 

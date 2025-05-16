@@ -20,7 +20,7 @@ session = Session(
     aws_secret_access_key=aws_secret_access_key,
     region_name=aws_region,
 )
-
+  
 def get_file_from_s3(key):
     try:
         s3 = session.client('s3', endpoint_url=aws_endpoint_url_s3)
