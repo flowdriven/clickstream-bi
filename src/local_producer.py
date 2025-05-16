@@ -43,13 +43,11 @@ def delivery_report(err, msg):
     #    print('(+) Message delivered to {} [{}]'.format(msg.topic(), msg.partition()))
 
 def process_csv(filename: str) -> Generator[Dict, None, None]:
-    """Function simulating streaming from csv dataset."""
     with open(filename, 'r', encoding="utf-8") as file:
         csv_reader = csv.DictReader(file)
         yield from csv_reader
 
 def process_topic(topic):
-    """Function sending records to any topic."""
     count = 0
     start_time = time.time()
 

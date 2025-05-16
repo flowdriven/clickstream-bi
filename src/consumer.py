@@ -9,7 +9,6 @@ def termination_required(last_message_time):
     return time.time() - last_message_time > TIMEOUT_SECONDS
 
 def process_msg(msg):
-    """Function writing message to output file."""
     offset = str(msg.offset())
     record = msg.value().decode('utf-8')
 
@@ -17,7 +16,6 @@ def process_msg(msg):
     return event_filename
 
 def process_topic(topic, process_name):
-    """Function subscribing and reading from topic."""
     count = 0
     last_message_time = 0
 

@@ -53,16 +53,16 @@ def process_csv(data: object) -> Generator[Dict, None, None]:
             generator that yields each row of the CSV file as a dictionary.
 
     Features:
-        - codecs.StreamReader to decode data from the stream 
+        - 'codecs.StreamReader' is used to decode data from the stream 
             and returns the resulting object
-        - the codecs.StreamReader takes in input a file-like object
-            having a read() method 
-        - the codecs.StreamReader supports the iterator protocol, therefore
-            the resulting object is passed into the csv.DictReader
-        - codecs.getreader() is the function used to create the StreamReader,  
+        - 'codecs.StreamReader' takes in input a file-like object
+            (having a read() method) 
+        - 'codecs.getreader()' is the function used to create the StreamReader,  
             by passing the codec utf-8
+        - 'codecs.StreamReader' supports the iterator protocol, therefore
+            the resulting object can be passed into the 'csv.DictReader'
         - the CSV file can be read row-by-row into a dictionary 
-            by passing the codecs.StreamReader into csv.DictReader
+            by passing the 'codecs.StreamReader' into 'csv.DictReader'
     """
     # Create a StreamReader to decode the stream using utf-8 codec
     csv_reader = csv.DictReader(codecs.getreader("utf-8")(data["Body"]))
@@ -70,7 +70,6 @@ def process_csv(data: object) -> Generator[Dict, None, None]:
     yield from csv_reader
 
 def process_topic(topic):
-    """Function sending records to any topic."""
     count = 0
     start_time = time.time()
 

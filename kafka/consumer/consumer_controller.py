@@ -5,7 +5,7 @@ from src import local_consumer
 
 topic_list = os.getenv("TOPIC_LIST").split(",")
 TIMEOUT_SECONDS = 30
-
+ 
 def timeout_procs(procs):
     start = time.time()
     while time.time() - start <= TIMEOUT_SECONDS:

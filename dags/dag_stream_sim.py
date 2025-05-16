@@ -41,6 +41,9 @@ with DAG(
 
         @task 
         def consume(topic):
+            # Assign one consumer per topic, each running in a separate task.
+            # The consumers in the same group in this case won't balance partitions across topics.
+            # Therefore, assign a unique group.id to each consumer to avoid rebalancing delays.
             consumer.process_topic(topic, f"consumer_{topic}")
 
         init(topic) >> [produce(topic), consume(topic)]
